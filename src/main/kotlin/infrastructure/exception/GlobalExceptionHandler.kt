@@ -35,7 +35,7 @@ class GlobalExceptionHandler {
         val errorResponse = ValidationErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             message = "Validation failed",
-            error = errors
+            errors = errors
         )
 
         return ResponseEntity
