@@ -2,9 +2,9 @@ package infrastructure.adapter.controller
 
 import domain.model.Dish
 import domain.service.DishService
+import infrastructure.dto.response.DishResponse
 import org.example.example.infrastructure.dto.requests.dish.DishCreateRequest
 import org.example.example.infrastructure.dto.requests.dish.DishUpdateRequest
-import org.example.example.infrastructure.dto.response.DishResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

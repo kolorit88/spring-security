@@ -1,5 +1,5 @@
 package org.example.example.infrastructure.dto.response.restaurant
-import org.example.example.infrastructure.dto.response.DishResponse
+import infrastructure.dto.response.DishResponse
 
 data class OrderResponse(
     val id: Long?,

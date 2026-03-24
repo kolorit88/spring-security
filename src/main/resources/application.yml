@@ -15,3 +15,10 @@ spring:
 
   volumes:
     pgdata:
+
+logging:
+  level:
+    root: INFO
+    com.example.delivery: DEBUG
+    org.springframework.web: WARN
+    org.hibernate.SQL: DEBUG

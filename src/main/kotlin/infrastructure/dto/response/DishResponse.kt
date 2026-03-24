@@ -1,4 +1,4 @@
-package org.example.example.infrastructure.dto.response
+package infrastructure.dto.response
 
 import java.math.BigDecimal
 

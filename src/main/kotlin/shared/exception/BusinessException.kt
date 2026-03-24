@@ -24,6 +24,4 @@ sealed class BusinessException(message: String) : RuntimeException(message) {
     class OrderValidationError(message: String) : BusinessException(message)
     class InvalidOrderStatusTransition(currentStatus: String, newStatus: String) :
         BusinessException("Cannot change order status from $currentStatus to $newStatus")
-    class OrderAlreadyProcessed(orderId: Long) : BusinessException("Order with id $orderId has already been processed")
-    class EmptyOrderError() : BusinessException("Order must contain at least one dish")
 }

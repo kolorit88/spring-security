@@ -1,4 +1,4 @@
-package application.dto.response
+package infrastructure.dto.response
 
 data class UserResponse(
     val id: Long?,

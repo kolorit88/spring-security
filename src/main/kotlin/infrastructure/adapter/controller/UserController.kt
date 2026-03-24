@@ -1,7 +1,7 @@
 package infrastructure.adapter.controller
 
 import org.example.example.infrastructure.dto.requests.user.UserData
-import application.dto.response.UserResponse
+import infrastructure.dto.response.UserResponse
 import domain.model.User
 import domain.service.UserService
 import org.example.example.infrastructure.dto.requests.user.UserUpdateRequest

@@ -3,7 +3,7 @@ package shared.utils.mapper
 import org.springframework.stereotype.Component
 import org.example.example.infrastructure.dto.requests.user.UserData
 import domain.model.User
-import application.dto.response.UserResponse
+import infrastructure.dto.response.UserResponse
 import org.example.example.infrastructure.dto.requests.user.UserUpdateRequest
 
 @Component
