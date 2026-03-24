@@ -14,12 +14,17 @@ import infrastructure.dto.response.error.ResourceNotFoundErrorResponse
 import infrastructure.dto.response.error.ValidationErrorResponse
 import org.example.example.infrastructure.dto.response.error.common.ErrorResponse
 import org.springframework.validation.FieldError
+import org.slf4j.LoggerFactory
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<ValidationErrorResponse> {
+        logger.debug("Validation failed: ${ex.message}")
+
         val errors = mutableMapOf<String, String>()
         ex.bindingResult.allErrors.forEach { error ->
             val fieldName = (error as? FieldError)?.field ?: error.objectName
@@ -41,6 +46,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        logger.warn("Malformed JSON request: ${ex.message}")
+
         val message = when (val cause = ex.cause) {
             is InvalidFormatException -> {
                 val fieldName = cause.path.joinToString(".") { it.fieldName }
@@ -63,6 +70,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        logger.warn("Illegal argument: ${ex.message}")
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             error = "Bad Request",
@@ -78,6 +87,8 @@ class GlobalExceptionHandler {
     // Обработка User исключений
     @ExceptionHandler(BusinessException.UserNotFound::class)
     fun handleUserNotFound(ex: BusinessException.UserNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
+        logger.warn("User not found: ${ex.message}")
+
         val errorResponse = ResourceNotFoundErrorResponse(
             status = HttpStatus.NOT_FOUND.value(),
             error = "User Not Found",
@@ -93,6 +104,8 @@ class GlobalExceptionHandler {
     // Обработка Dish исключений
     @ExceptionHandler(BusinessException.DishNotFound::class)
     fun handleDishNotFound(ex: BusinessException.DishNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
+        logger.warn("Dish not found: ${ex.message}")
+
         val errorResponse = ResourceNotFoundErrorResponse(
             status = HttpStatus.NOT_FOUND.value(),
             error = "Dish Not Found",
@@ -107,12 +120,14 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.DishNameAlreadyExists::class)
     fun handleDishNameExists(ex: BusinessException.DishNameAlreadyExists): ResponseEntity<ConflictErrorResponse> {
+        logger.warn("Dish name already exists: ${ex.message}")
+
         val errorResponse = ConflictErrorResponse(
             status = HttpStatus.CONFLICT.value(),
             error = "Dish Name Already Exists",
             message = ex.message ?: "Dish name already exists",
             resourceType = "Dish",
-            resourceIdentifier = ex.message?.substringAfter(": ") // можно извлечь имя, если нужно
+            resourceIdentifier = ex.message?.substringAfter(": ")
         )
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
@@ -123,6 +138,8 @@ class GlobalExceptionHandler {
     // Обработка Restaurant исключений
     @ExceptionHandler(BusinessException.RestaurantNotFound::class)
     fun handleRestaurantNotFound(ex: BusinessException.RestaurantNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
+        logger.warn("Restaurant not found: ${ex.message}")
+
         val errorResponse = ResourceNotFoundErrorResponse(
             status = HttpStatus.NOT_FOUND.value(),
             error = "Restaurant Not Found",
@@ -137,6 +154,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.RestaurantNameAlreadyExists::class)
     fun handleRestaurantNameExists(ex: BusinessException.RestaurantNameAlreadyExists): ResponseEntity<ConflictErrorResponse> {
+        logger.warn("Restaurant name already exists: ${ex.message}")
+
         val errorResponse = ConflictErrorResponse(
             status = HttpStatus.CONFLICT.value(),
             error = "Restaurant Name Already Exists",
@@ -153,6 +172,8 @@ class GlobalExceptionHandler {
     // Обработка Order исключений
     @ExceptionHandler(BusinessException.OrderNotFound::class)
     fun handleOrderNotFound(ex: BusinessException.OrderNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
+        logger.warn("Order not found: ${ex.message}")
+
         val errorResponse = ResourceNotFoundErrorResponse(
             status = HttpStatus.NOT_FOUND.value(),
             error = "Order Not Found",
@@ -167,6 +188,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.InvalidOrderStatusTransition::class)
     fun handleInvalidOrderStatusTransition(ex: BusinessException.InvalidOrderStatusTransition): ResponseEntity<ErrorResponse> {
+        logger.warn("Invalid order status transition: ${ex.message}")
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             error = "Invalid Status Transition",
@@ -181,6 +204,8 @@ class GlobalExceptionHandler {
     // Обработка OrderValidationError - возвращаем 400 BAD REQUEST
     @ExceptionHandler(BusinessException.OrderValidationError::class)
     fun handleOrderValidationError(ex: BusinessException.OrderValidationError): ResponseEntity<ErrorResponse> {
+        logger.warn("Order validation error: ${ex.message}")
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             error = "Validation Error",
@@ -200,6 +225,8 @@ class GlobalExceptionHandler {
         BusinessException.RestaurantValidationError::class
     )
     fun handleBusinessValidationError(ex: BusinessException): ResponseEntity<ErrorResponse> {
+        logger.warn("Business validation error: ${ex.message}")
+
         val errorResponse = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
             error = "Validation Error",
@@ -214,6 +241,8 @@ class GlobalExceptionHandler {
     // Обработка Email конфликта
     @ExceptionHandler(BusinessException.EmailAlreadyExists::class)
     fun handleEmailExists(ex: BusinessException.EmailAlreadyExists): ResponseEntity<ConflictErrorResponse> {
+        logger.warn("Email already exists: ${ex.message}")
+
         val errorResponse = ConflictErrorResponse(
             status = HttpStatus.CONFLICT.value(),
             error = "Email Already Exists",
@@ -230,7 +259,7 @@ class GlobalExceptionHandler {
     // Общая обработка исключений
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-        ex.printStackTrace()
+        logger.error("Unexpected error occurred", ex)
 
         val errorResponse = ErrorResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),

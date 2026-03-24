@@ -1,8 +1,9 @@
 package org.example.example.infrastructure.adapter.controller
 
 import domain.service.DishService
+import infrastructure.dto.response.DishResponse
+import jakarta.validation.Valid
 import org.example.example.infrastructure.dto.requests.dish.DishCreateRequest
-import org.example.example.infrastructure.dto.response.DishResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -18,7 +19,7 @@ class DishInRestaurantController(
     @PostMapping
     fun createDishInRestaurant(
         @PathVariable restaurantId: Long,
-        @RequestBody createRequest: DishCreateRequest
+        @Valid @RequestBody createRequest: DishCreateRequest
     ): ResponseEntity<DishResponse> {
         val dish = dishMapper.toDomain(createRequest)
         val createdDish = dishService.createDishInRestaurant(restaurantId, dish)

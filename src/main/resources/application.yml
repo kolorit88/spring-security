@@ -19,6 +19,6 @@ spring:
 logging:
   level:
     root: INFO
-    com.example.delivery: DEBUG
+    com.example.example: DEBUG
     org.springframework.web: WARN
     org.hibernate.SQL: DEBUG

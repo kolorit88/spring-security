@@ -2,7 +2,6 @@ package infrastructure.adapter.controller
 
 import infrastructure.dto.requests.restaurant.RestaurantCreateRequest
 import org.example.example.infrastructure.dto.requests.restaurant.RestaurantUpdateRequest
-import org.example.example.infrastructure.dto.response.DishResponse
 import org.example.example.infrastructure.dto.response.restaurant.RestaurantResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -10,6 +9,8 @@ import org.springframework.web.bind.annotation.*
 import shared.utils.mapper.DishMapper
 import shared.utils.mapper.RestaurantMapper
 import domain.service.RestaurantService
+import infrastructure.dto.response.DishResponse
+import jakarta.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/restaurants")
@@ -27,7 +28,7 @@ class RestaurantController(
     }
 
     @PostMapping
-    fun createRestaurant(@RequestBody createRequest: RestaurantCreateRequest): ResponseEntity<RestaurantResponse> {
+    fun createRestaurant(@Valid @RequestBody createRequest: RestaurantCreateRequest): ResponseEntity<RestaurantResponse> {
         val restaurant = restaurantMapper.toDomain(createRequest)
         val (resultRestaurant, wasCreated) = restaurantService.createRestaurant(restaurant)
         val response = restaurantMapper.toResponse(resultRestaurant)
