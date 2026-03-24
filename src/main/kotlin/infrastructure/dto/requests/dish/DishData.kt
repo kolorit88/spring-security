@@ -1,4 +1,4 @@
-package org.example.example.infrastructure.dto.requests.dish
+package infrastructure.dto.requests.dish
 import java.math.BigDecimal
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank

@@ -6,7 +6,7 @@ import java.math.BigDecimal
 data class Dish(
     override var id: Long? = null,
     var name: String,
-    var description: String,
+    var description: String? = null,
     val price: BigDecimal,
     val isAvailable: Boolean,
     val restaurantId: Long?
@@ -15,7 +15,6 @@ data class Dish(
     init
     {
         require(name.isNotEmpty()) { "Name must not be empty" }
-        require(description.isNotEmpty()) { "Description must not be empty" }
         require(price >= BigDecimal.ZERO) { "New price must be greater than zero" }
     }
 

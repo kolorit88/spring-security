@@ -1,9 +1,9 @@
 package shared.utils.mapper
 import domain.model.Dish
+import infrastructure.dto.requests.dish.DishData
+import infrastructure.dto.response.DishResponse
 import org.example.example.infrastructure.dto.requests.dish.DishCreateRequest
-import org.example.example.infrastructure.dto.requests.dish.DishData
 import org.example.example.infrastructure.dto.requests.dish.DishUpdateRequest
-import org.example.example.infrastructure.dto.response.DishResponse
 import org.springframework.stereotype.Component
 @Component
 class DishMapper {
