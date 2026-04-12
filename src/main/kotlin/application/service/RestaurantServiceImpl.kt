@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import shared.exception.BusinessException
 
 @Service
+
 class RestaurantServiceImpl(
     private val restaurantRepositoryPort: RestaurantRepositoryPort,
     private val dishRepositoryPort: DishRepositoryPort

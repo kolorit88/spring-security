@@ -14,7 +14,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     "application",
     "infrastructure",
     "shared",
-    "org.example.example"
+    "org.example.example",
+    "domain"
 ])
 class App
 
