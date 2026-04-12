@@ -28,6 +28,9 @@ jobs:
 
       - name: Compile Spring app
         run: ./mvnw clean
-
+        
       - name: Run Spring app tests
         run: ./mvnw test
+
+
+      
