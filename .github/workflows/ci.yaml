@@ -23,11 +23,11 @@ jobs:
       - name: Load .env
         run: cat .env >> $GITHUB_ENV
 
-      - name: Compile Spring app
-        run: ./mvnw clean
-
       - name: Make mvnw executable
         run: chmod +x ./mvnw
+
+      - name: Compile Spring app
+        run: ./mvnw clean
 
       - name: Run Spring app tests
         run: ./mvnw test
