@@ -11,4 +11,8 @@ class UserMockRepositoryAdapter : UserRepositoryPort, BaseMockRepositoryAdapter<
     override fun findByEmail(email: String): User? {
         return storage.values.find { it.email.equals(email, ignoreCase = true) }
     }
+
+    override fun existsByEmail(email: String): Boolean {
+        TODO("Not yet implemented")
+    }
 }

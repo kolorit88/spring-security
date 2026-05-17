@@ -11,6 +11,7 @@ import com.example.shared.utils.mapper.RestaurantMapper
 import com.example.domain.service.RestaurantService
 import com.example.infrastructure.dto.response.DishResponse
 import jakarta.validation.Valid
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/v1/restaurants")
@@ -28,6 +29,7 @@ class RestaurantController(
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun createRestaurant(@Valid @RequestBody createRequest: RestaurantCreateRequest): ResponseEntity<RestaurantResponse> {
         val restaurant = restaurantMapper.toDomain(createRequest)
         val (resultRestaurant, wasCreated) = restaurantService.createRestaurant(restaurant)
@@ -45,6 +47,7 @@ class RestaurantController(
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun updateRestaurant(
         @PathVariable id: Long,
         @RequestBody updateRequest: RestaurantUpdateRequest
@@ -56,6 +59,7 @@ class RestaurantController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun deleteRestaurant(@PathVariable id: Long): ResponseEntity<Unit> {
         restaurantService.deleteRestaurantById(id)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()

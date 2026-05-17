@@ -24,4 +24,6 @@ sealed class BusinessException(message: String) : RuntimeException(message) {
     class OrderValidationError(message: String) : BusinessException(message)
     class InvalidOrderStatusTransition(currentStatus: String, newStatus: String) :
         BusinessException("Cannot change order status from $currentStatus to $newStatus")
+    class InvalidCredentialsException : BusinessException("Неверный email или пароль")
+    class UserNotFoundByEmail(email: String): BusinessException("Пользователь с почтой:$email не найден")
 }

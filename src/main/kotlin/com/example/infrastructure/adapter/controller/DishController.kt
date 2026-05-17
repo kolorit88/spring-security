@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.example.shared.utils.mapper.DishMapper
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/v1/dishes")
@@ -26,6 +27,7 @@ class DishController(
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun createDish(@Valid @RequestBody createRequest: DishCreateRequest): ResponseEntity<DishResponse> {
         val dishFromRequest = dishMapper.toDomain(createRequest)
         val (resultDish, wasCreated) = dishService.createOrGetDish(dishFromRequest)
@@ -43,6 +45,7 @@ class DishController(
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun updateDish(@PathVariable id: Long, @Valid @RequestBody updateRequest: DishUpdateRequest): ResponseEntity<DishResponse> {
         val dish = dishMapper.toDomain(updateRequest).copy(id = id)
         val updatedDish = dishService.updateDish(dish)
@@ -51,6 +54,7 @@ class DishController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun deleteDish(@PathVariable id: Long): ResponseEntity<Unit> {
         dishService.deleteDishById(id)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()

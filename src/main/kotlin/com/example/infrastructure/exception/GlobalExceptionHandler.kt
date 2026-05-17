@@ -15,6 +15,7 @@ import com.example.infrastructure.dto.response.error.ValidationErrorResponse
 import com.example.infrastructure.dto.response.error.common.ErrorResponse
 import org.springframework.validation.FieldError
 import org.slf4j.LoggerFactory
+import org.springframework.security.authentication.BadCredentialsException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -272,4 +273,38 @@ class GlobalExceptionHandler {
             .contentType(MediaType.APPLICATION_JSON)
             .body(errorResponse)
     }
+
+    @ExceptionHandler(BadCredentialsException::class)
+    fun handleBadCredentials(ex: BadCredentialsException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(
+                status = HttpStatus.UNAUTHORIZED.value(),
+                error = "Unauthorized",
+                message = "Неверный email или пароль"
+            ))
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDenied(ex: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(
+                status = HttpStatus.FORBIDDEN.value(),
+                error = "Forbidden",
+                message = "Доступ запрещён"
+            ))
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.JwtException::class)
+    fun handleJwtException(ex: io.jsonwebtoken.JwtException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(
+                status = HttpStatus.UNAUTHORIZED.value(),
+                error = "Invalid Token",
+                message = "Невалидный или просроченный токен"
+            ))
+    }
+
 }

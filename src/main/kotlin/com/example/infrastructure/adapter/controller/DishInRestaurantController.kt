@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.example.shared.utils.mapper.DishMapper
+import org.springframework.security.access.prepost.PreAuthorize
 
 @RestController
 @RequestMapping("/api/v1/restaurants/{restaurantId}/dishes")
@@ -17,6 +18,7 @@ class DishInRestaurantController(
 ) {
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun createDishInRestaurant(
         @PathVariable restaurantId: Long,
         @Valid @RequestBody createRequest: DishCreateRequest

@@ -2,6 +2,7 @@ package com.example.infrastructure.adapter.persistence.jpa.adapter
 
 import com.example.domain.model.User
 import com.example.domain.port.UserRepositoryPort
+import com.example.infrastructure.adapter.persistence.jpa.entity.Role
 import com.example.infrastructure.adapter.persistence.jpa.repository.UserJpaRepository
 import com.example.infrastructure.adapter.persistence.jpa.entity.UserEntity
 import com.example.infrastructure.adapter.persistence.jpa.repository.OrderJpaRepository
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 @Profile("db", "test")
+
 class UserJpaAdapter(
     private val userJpaRepository: UserJpaRepository,
     private val orderJpaRepository: OrderJpaRepository
@@ -33,8 +35,12 @@ class UserJpaAdapter(
     override fun update(entity: User): User {
         val existingEntity = userJpaRepository.findById(entity.id!!)
             .orElseThrow { IllegalArgumentException("User with id ${entity.id} not found") }
-
-        val updatedEntity = UserEntity.fromDomain(entity)
+        // Сохраняем существующий пароль и роль, чтобы не затереть их
+        val updatedEntity = UserEntity.fromDomain(
+            entity,
+            existingEntity.password,
+            existingEntity.role
+        )
         val savedEntity = userJpaRepository.save(updatedEntity)
         return savedEntity.toDomain()
     }
@@ -55,6 +61,10 @@ class UserJpaAdapter(
 
     override fun findByEmail(email: String): User? {
         return userJpaRepository.findByEmail(email)?.toDomain()
+    }
+
+    override fun existsByEmail(email: String): Boolean {
+        return userJpaRepository.existsByEmail(email)
     }
 
 }

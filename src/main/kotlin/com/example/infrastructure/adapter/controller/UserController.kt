@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.example.shared.utils.mapper.UserMapper
+import org.springframework.security.access.prepost.PreAuthorize
 
 
 @RestController
@@ -20,6 +21,7 @@ class UserController(
 ) {
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun listUsers(): ResponseEntity<List<UserResponse>> {
         val usersDomain: List<User> = userService.getAllUsers()
         val response: List<UserResponse> = usersDomain.map { userMapper.toResponse(it) }
@@ -27,6 +29,7 @@ class UserController(
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun createUser(@Valid @RequestBody userData: UserData): ResponseEntity<UserResponse> {
         val userFromData = userMapper.toDomain(userData)
         val (resultUser, wasCreated) = userService.createOrGetUser(userFromData)
@@ -44,6 +47,7 @@ class UserController(
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun updateUser(@PathVariable id: Int, @Valid @RequestBody updateRequest: UserUpdateRequest): ResponseEntity<UserResponse> {
         val user = userMapper.toDomain(updateRequest).copy(id = id.toLong())
         val updatedUser = userService.updateUser(user)
@@ -52,6 +56,7 @@ class UserController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun deleteUserById(@PathVariable id: Int): ResponseEntity<Boolean> {
         val result = userService.deleteUserById(id.toLong())
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result)
