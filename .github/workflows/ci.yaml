@@ -14,9 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Make mvnw executable
-        run: chmod +x ./mvnw
-
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -28,9 +25,6 @@ jobs:
 
       - name: Compile Spring app
         run: ./mvnw clean
-        
+
       - name: Run Spring app tests
         run: ./mvnw test
-
-
-      
