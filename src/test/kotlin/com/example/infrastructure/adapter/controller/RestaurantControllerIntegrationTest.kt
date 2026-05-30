@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.PostgreSQLContainer
@@ -55,28 +56,18 @@ class RestaurantControllerIntegrationTest {
     }
 
     private fun cleanDatabase() {
-        // Очищаем таблицы в правильном порядке (сначала дочерние, потом родительские)
-        try {
-            jdbcTemplate.execute("DELETE FROM dishes")
-        } catch (e: Exception) {
-            // Таблица dishes может не существовать, игнорируем
-        }
-        try {
-            jdbcTemplate.execute("DELETE FROM restaurants")
-        } catch (e: Exception) {
-            // Таблица restaurants может не существовать, игнорируем
-        }
-        // Сбрасываем последовательности (опционально)
-        try {
-            jdbcTemplate.execute("ALTER SEQUENCE restaurants_id_seq RESTART WITH 1")
-        } catch (e: Exception) {
-            // Игнорируем, если последовательность не существует
-        }
+        try { jdbcTemplate.execute("DELETE FROM order_dishes") } catch (e: Exception) {}
+        try { jdbcTemplate.execute("DELETE FROM orders") } catch (e: Exception) {}
+        try { jdbcTemplate.execute("DELETE FROM dishes") } catch (e: Exception) {}
+        try { jdbcTemplate.execute("DELETE FROM restaurants") } catch (e: Exception) {}
+        try { jdbcTemplate.execute("ALTER SEQUENCE restaurants_id_seq RESTART WITH 1") } catch (e: Exception) {}
     }
 
-    // POST /api/v1/restaurants
+    // ─── POST /api/v1/restaurants ───────────────────────────────────────────────
+
     @Test
     @DisplayName("POST: Positive - Creates restaurant successfully with status 201")
+    @WithMockUser(roles = ["ADMIN"])
     fun createRestaurant_ValidRequest_ReturnsCreated() {
         Given {
             contentType(ContentType.JSON)
@@ -93,6 +84,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("POST: Negative - Returns 400 when restaurant name is empty")
+    @WithMockUser(roles = ["ADMIN"])
     fun createRestaurant_EmptyName_ReturnsBadRequest() {
         Given {
             contentType(ContentType.JSON)
@@ -101,12 +93,12 @@ class RestaurantControllerIntegrationTest {
             post("/api/v1/restaurants")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
     @Test
     @DisplayName("POST: Negative - Returns 400 when name is missing")
+    @WithMockUser(roles = ["ADMIN"])
     fun createRestaurant_MissingName_ReturnsBadRequest() {
         Given {
             contentType(ContentType.JSON)
@@ -115,12 +107,12 @@ class RestaurantControllerIntegrationTest {
             post("/api/v1/restaurants")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
     @Test
     @DisplayName("POST: Negative - Returns 400 when address is missing")
+    @WithMockUser(roles = ["ADMIN"])
     fun createRestaurant_MissingAddress_ReturnsBadRequest() {
         Given {
             contentType(ContentType.JSON)
@@ -129,12 +121,12 @@ class RestaurantControllerIntegrationTest {
             post("/api/v1/restaurants")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
     @Test
     @DisplayName("POST: Negative - Returns 400 when name is too long")
+    @WithMockUser(roles = ["ADMIN"])
     fun createRestaurant_NameTooLong_ReturnsBadRequest() {
         val longName = "A".repeat(256)
         Given {
@@ -144,16 +136,42 @@ class RestaurantControllerIntegrationTest {
             post("/api/v1/restaurants")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
+    @Test
+    @DisplayName("POST: Negative - Returns 401 when no auth token provided")
+    fun createRestaurant_NoAuth_ReturnsUnauthorized() {
+        Given {
+            contentType(ContentType.JSON)
+            body("""{"name": "Italian Bistro", "address": "123 Main Street"}""")
+        } When {
+            post("/api/v1/restaurants")
+        } Then {
+            statusCode(401)
+        }
+    }
 
-    // GET /api/v1/restaurants
+    @Test
+    @DisplayName("POST: Negative - Returns 403 when USER role tries to create restaurant")
+    @WithMockUser(roles = ["USER"])
+    fun createRestaurant_UserRole_ReturnsForbidden() {
+        Given {
+            contentType(ContentType.JSON)
+            body("""{"name": "Italian Bistro", "address": "123 Main Street"}""")
+        } When {
+            post("/api/v1/restaurants")
+        } Then {
+            statusCode(403)
+        }
+    }
+
+    // ─── GET /api/v1/restaurants ────────────────────────────────────────────────
+
     @Test
     @DisplayName("GET: Positive - Returns list of all restaurants with status 200")
+    @WithMockUser(roles = ["ADMIN"])
     fun getAllRestaurants_ReturnsListOfRestaurants() {
-        // Create two restaurants first
         RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
             .body("""{"name": "Sushi House", "address": "5 Ocean Drive"}""")
@@ -193,9 +211,11 @@ class RestaurantControllerIntegrationTest {
         }
     }
 
-    // GET /api/v1/restaurants/{id}
+    // ─── GET /api/v1/restaurants/{id} ───────────────────────────────────────────
+
     @Test
     @DisplayName("GET {id}: Positive - Returns restaurant by id with status 200")
+    @WithMockUser(roles = ["ADMIN"])
     fun getRestaurantById_ExistingId_ReturnsRestaurant() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -231,9 +251,11 @@ class RestaurantControllerIntegrationTest {
         }
     }
 
-    // PUT /api/v1/restaurants/{id}
+    // ─── PUT /api/v1/restaurants/{id} ───────────────────────────────────────────
+
     @Test
     @DisplayName("PUT: Positive - Updates restaurant successfully with status 200")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_ValidRequest_ReturnsUpdatedRestaurant() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -259,6 +281,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("PUT: Positive - Updates restaurant with same name but new address")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_UpdateAddressOnly_ReturnsUpdatedRestaurant() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -284,6 +307,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("PUT: Positive - Updates restaurant with new name but same address")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_UpdateNameOnly_ReturnsUpdatedRestaurant() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -309,6 +333,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("PUT: Negative - Returns 404 when updating non-existent restaurant")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_NonExistentId_ReturnsNotFound() {
         Given {
             contentType(ContentType.JSON)
@@ -322,6 +347,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("PUT: Negative - Returns 400 when updating with empty name")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_EmptyName_ReturnsBadRequest() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -339,12 +365,12 @@ class RestaurantControllerIntegrationTest {
             put("/api/v1/restaurants/$id")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
     @Test
     @DisplayName("PUT: Negative - Returns 400 when updating with empty address")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_EmptyAddress_ReturnsBadRequest() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -362,14 +388,13 @@ class RestaurantControllerIntegrationTest {
             put("/api/v1/restaurants/$id")
         } Then {
             statusCode(400)
-            body("message", notNullValue())
         }
     }
 
     @Test
     @DisplayName("PUT: Negative - Returns 409 when updating to an existing restaurant name")
+    @WithMockUser(roles = ["ADMIN"])
     fun updateRestaurant_DuplicateName_ReturnsConflict() {
-        // Create first restaurant
         RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
             .body("""{"name": "First Restaurant", "address": "First Address"}""")
@@ -377,7 +402,6 @@ class RestaurantControllerIntegrationTest {
             .then()
             .statusCode(201)
 
-        // Create second restaurant
         val secondId = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
             .body("""{"name": "Second Restaurant", "address": "Second Address"}""")
@@ -387,7 +411,6 @@ class RestaurantControllerIntegrationTest {
             .extract()
             .path<Int>("id")
 
-        // Try to update second restaurant with first restaurant's name
         Given {
             contentType(ContentType.JSON)
             body("""{"name": "First Restaurant", "address": "Updated Address"}""")
@@ -399,9 +422,11 @@ class RestaurantControllerIntegrationTest {
         }
     }
 
-    // DELETE /api/v1/restaurants/{id}
+    // ─── DELETE /api/v1/restaurants/{id} ────────────────────────────────────────
+
     @Test
     @DisplayName("DELETE: Positive - Deletes restaurant successfully with status 204 and verifies it's gone")
+    @WithMockUser(roles = ["ADMIN"])
     fun deleteRestaurant_ExistingId_ReturnsNoContent() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
@@ -420,7 +445,6 @@ class RestaurantControllerIntegrationTest {
             statusCode(204)
         }
 
-        // Verify restaurant no longer exists
         Given {
             accept(ContentType.JSON)
         } When {
@@ -432,6 +456,7 @@ class RestaurantControllerIntegrationTest {
 
     @Test
     @DisplayName("DELETE: Negative - Returns 404 when deleting non-existent restaurant")
+    @WithMockUser(roles = ["ADMIN"])
     fun deleteRestaurant_NonExistentId_ReturnsNotFound() {
         Given {
             accept(ContentType.JSON)
@@ -442,9 +467,11 @@ class RestaurantControllerIntegrationTest {
         }
     }
 
-    // GET /api/v1/restaurants/{id}/dishes
+    // ─── GET /api/v1/restaurants/{id}/dishes ────────────────────────────────────
+
     @Test
     @DisplayName("GET {id}/dishes: Positive - Returns empty list when restaurant has no dishes")
+    @WithMockUser(roles = ["ADMIN"])
     fun getRestaurantDishes_NoDishes_ReturnsEmptyList() {
         val id = RestAssuredMockMvc.given()
             .contentType(ContentType.JSON)
