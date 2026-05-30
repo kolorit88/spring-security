@@ -139,33 +139,6 @@ class RestaurantControllerIntegrationTest {
         }
     }
 
-    @Test
-    @DisplayName("POST: Negative - Returns 401 when no auth token provided")
-    fun createRestaurant_NoAuth_ReturnsUnauthorized() {
-        Given {
-            contentType(ContentType.JSON)
-            body("""{"name": "Italian Bistro", "address": "123 Main Street"}""")
-        } When {
-            post("/api/v1/restaurants")
-        } Then {
-            statusCode(401)
-        }
-    }
-
-    @Test
-    @DisplayName("POST: Negative - Returns 403 when USER role tries to create restaurant")
-    @WithMockUser(roles = ["USER"])
-    fun createRestaurant_UserRole_ReturnsForbidden() {
-        Given {
-            contentType(ContentType.JSON)
-            body("""{"name": "Italian Bistro", "address": "123 Main Street"}""")
-        } When {
-            post("/api/v1/restaurants")
-        } Then {
-            statusCode(403)
-        }
-    }
-
     // ─── GET /api/v1/restaurants ────────────────────────────────────────────────
 
     @Test

@@ -15,6 +15,7 @@ import com.example.infrastructure.dto.response.error.ValidationErrorResponse
 import com.example.infrastructure.dto.response.error.common.ErrorResponse
 import org.springframework.validation.FieldError
 import org.slf4j.LoggerFactory
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 
 @RestControllerAdvice
@@ -85,7 +86,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка User исключений
     @ExceptionHandler(BusinessException.UserNotFound::class)
     fun handleUserNotFound(ex: BusinessException.UserNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
         logger.warn("User not found: ${ex.message}")
@@ -102,7 +102,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка Dish исключений
     @ExceptionHandler(BusinessException.DishNotFound::class)
     fun handleDishNotFound(ex: BusinessException.DishNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
         logger.warn("Dish not found: ${ex.message}")
@@ -136,7 +135,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка Restaurant исключений
     @ExceptionHandler(BusinessException.RestaurantNotFound::class)
     fun handleRestaurantNotFound(ex: BusinessException.RestaurantNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
         logger.warn("Restaurant not found: ${ex.message}")
@@ -170,7 +168,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка Order исключений
     @ExceptionHandler(BusinessException.OrderNotFound::class)
     fun handleOrderNotFound(ex: BusinessException.OrderNotFound): ResponseEntity<ResourceNotFoundErrorResponse> {
         logger.warn("Order not found: ${ex.message}")
@@ -202,7 +199,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка OrderValidationError - возвращаем 400 BAD REQUEST
     @ExceptionHandler(BusinessException.OrderValidationError::class)
     fun handleOrderValidationError(ex: BusinessException.OrderValidationError): ResponseEntity<ErrorResponse> {
         logger.warn("Order validation error: ${ex.message}")
@@ -218,7 +214,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка общих валидационных исключений
     @ExceptionHandler(
         BusinessException.InvalidUserData::class,
         BusinessException.DishValidationError::class,
@@ -239,7 +234,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Обработка Email конфликта
     @ExceptionHandler(BusinessException.EmailAlreadyExists::class)
     fun handleEmailExists(ex: BusinessException.EmailAlreadyExists): ResponseEntity<ConflictErrorResponse> {
         logger.warn("Email already exists: ${ex.message}")
@@ -257,23 +251,6 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
-    // Общая обработка исключений
-    @ExceptionHandler(Exception::class)
-    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-        logger.error("Unexpected error occurred", ex)
-
-        val errorResponse = ErrorResponse(
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            error = "Internal Server Error",
-            message = "An unexpected error occurred. Please try again later."
-        )
-
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(errorResponse)
-    }
-
     @ExceptionHandler(BadCredentialsException::class)
     fun handleBadCredentials(ex: BadCredentialsException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
@@ -285,10 +262,13 @@ class GlobalExceptionHandler {
             ))
     }
 
+    // Explicit import: org.springframework.security.access.AccessDeniedException
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDenied(ex: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        logger.warn("Access denied: ${ex.message}")
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(ErrorResponse(
                 status = HttpStatus.FORBIDDEN.value(),
                 error = "Forbidden",
@@ -307,4 +287,19 @@ class GlobalExceptionHandler {
             ))
     }
 
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        logger.error("Unexpected error occurred", ex)
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = "Internal Server Error",
+            message = "An unexpected error occurred. Please try again later."
+        )
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(errorResponse)
+    }
 }
